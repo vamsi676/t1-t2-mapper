@@ -35,8 +35,9 @@ cdk.context.json
 # Node modules
 node_modules/
 
-# Build output
-lib/
+# Build output (compiled JS files, but keep TypeScript source)
+lib/*.js
+lib/*.d.ts
 *.js
 *.d.ts
 !bin/*.js
