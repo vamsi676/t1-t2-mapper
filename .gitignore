@@ -25,3 +25,18 @@ npm-debug.log*
 *.tmp
 *.temp
 
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# CDK version file
+cdk.context.json
+
+# Node modules
+node_modules/
+
+# Build output
+lib/
+*.js
+*.d.ts
+!bin/*.js
