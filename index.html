@@ -883,9 +883,8 @@
 // Theme: apply on load and enable toggle
 (function initTheme(){
   try {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     const saved = localStorage.getItem('theme');
-    const initial = saved ? saved : (prefersDark ? 'dark' : 'light');
+    const initial = saved ? saved : 'dark'; // Default to dark theme
     document.documentElement.setAttribute('data-theme', initial);
     const fab = document.getElementById('theme-switch');
     if (fab) {
