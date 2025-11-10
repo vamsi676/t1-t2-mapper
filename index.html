@@ -25,6 +25,12 @@
           <label for="dev">Device name</label>
           <input id="dev" type="text" placeholder="sbn100-104-es-m1-p5-t1-r89">
           <div class="fErr" id="errDev"></div>
+          <div id="rackLocation" style="margin-top: 8px; display: none;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(59,130,246,.1); border-radius: 6px; border: 1px solid rgba(59,130,246,.2);">
+              <span style="font-size: 14px; font-weight: 600; color: #3b82f6;">📍</span>
+              <span style="font-size: 13px; color: #1e40af; font-weight: 600;" id="locationText">Loading location...</span>
+            </div>
+          </div>
           <div class="muted">Need a quick sample? <button type="button" id="autoExample" class="linkbtn">Example</button></div>
         </div>
         <div class="field">

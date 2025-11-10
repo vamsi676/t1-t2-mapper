@@ -15,6 +15,104 @@
     }
   } catch {}
 })();
+
+// Happoshu API Integration for Rack Location
+const HAPPOSHU_CONFIG = {
+  baseURL: 'https://tavern.corp.amazon.com',
+  endpoint: '/happoshu/api/simplified/query/switch_assets',
+  region: 'CMH',
+  cache: new Map(),
+  cacheTimeout: 5 * 60 * 1000 // 5 minutes
+};
+
+async function fetchRackLocation(deviceName) {
+  if (!deviceName || !deviceName.toLowerCase().includes('-t1-')) {
+    return null;
+  }
+
+  // Check cache first
+  const cacheKey = deviceName.toLowerCase();
+  const cached = HAPPOSHU_CONFIG.cache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < HAPPOSHU_CONFIG.cacheTimeout) {
+    return cached.data;
+  }
+
+  try {
+    const url = `${HAPPOSHU_CONFIG.baseURL}${HAPPOSHU_CONFIG.endpoint}?switch_assets=${encodeURIComponent(deviceName)}&region=${HAPPOSHU_CONFIG.region}&show_deleted=false`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Cache the result
+    if (data && data.length > 0) {
+      const locationData = {
+        location: data[0].location || null,
+        rack_asset_id: data[0].rack_asset_id || null,
+        asset_id: data[0].asset_id || null,
+        serial_number: data[0].serial_number || null
+      };
+      
+      HAPPOSHU_CONFIG.cache.set(cacheKey, {
+        data: locationData,
+        timestamp: Date.now()
+      });
+      
+      return locationData;
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Happoshu API error:', error);
+    return null;
+  }
+}
+
+function displayRackLocation(deviceName) {
+  const locationDiv = document.getElementById('rackLocation');
+  const locationText = document.getElementById('locationText');
+  
+  if (!locationDiv || !locationText) return;
+  
+  if (!deviceName || !deviceName.toLowerCase().includes('-t1-')) {
+    locationDiv.style.display = 'none';
+    return;
+  }
+  
+  // Show loading state
+  locationDiv.style.display = 'block';
+  locationText.textContent = 'Loading location...';
+  locationText.style.color = '#6b7280';
+  
+  fetchRackLocation(deviceName).then(locationData => {
+    if (locationData && locationData.location) {
+      locationText.textContent = `Location: ${locationData.location}`;
+      locationText.style.color = '';
+      // Apply theme color
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      locationText.style.color = isDark ? '#93c5fd' : '#1e40af';
+    } else {
+      locationText.textContent = 'Location not found';
+      locationText.style.color = '#9ca3af';
+      // Hide after 3 seconds if not found
+      setTimeout(() => {
+        locationDiv.style.display = 'none';
+      }, 3000);
+    }
+  }).catch(() => {
+    locationDiv.style.display = 'none';
+  });
+}
+
     function parseFields(dev) {
       const pMatch = dev.match(/-p(\d+)-/i);
       const rMatch = dev.match(/-r(\d+)/i);
@@ -80,6 +178,14 @@
       const hasErrors = Boolean(devErr || pErr || rErr || jrpParseError || jErr || cErr || !dev);
       const calcBtn = document.getElementById('calc');
       if (calcBtn) calcBtn.disabled = hasErrors;
+      
+      // Fetch rack location when device is valid
+      if (dev && dev.toLowerCase().includes('-t1-') && !devErr && !pErr && !rErr) {
+        displayRackLocation(dev);
+      } else {
+        const locationDiv = document.getElementById('rackLocation');
+        if (locationDiv) locationDiv.style.display = 'none';
+      }
     }
     
     function compute() {

@@ -257,6 +257,10 @@
     html[data-theme="dark"] .history .histItem { background: #0f172a; border-color: #14213b; }
     html[data-theme="dark"] .histItem .main { color: #e5e7eb; }
     html[data-theme="dark"] .histItem .meta { color: #9aa6c1; }
+    /* Rack Location Display */
+    #rackLocation { margin-top: 8px; }
+    html[data-theme="dark"] #rackLocation div { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.3); }
+    html[data-theme="dark"] #rackLocation span:last-child { color: #93c5fd; }
     /* NDF hero styles */
     .ndfHero { background: #0f172a; color: #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
     @keyframes glowSweep { 0% { box-shadow: 0 0 0 0 rgba(59,130,246,.0);} 50% { box-shadow: 0 0 0 8px rgba(59,130,246,.15);} 100% { box-shadow: 0 0 0 0 rgba(59,130,246,.0);} }
