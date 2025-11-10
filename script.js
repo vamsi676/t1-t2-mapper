@@ -41,15 +41,21 @@ async function fetchRackLocation(deviceName) {
   }
 
   try {
-    const url = `${HAPPOSHU_CONFIG.baseURL}${HAPPOSHU_CONFIG.endpoint}?switch_assets=${encodeURIComponent(deviceName)}&region=${HAPPOSHU_CONFIG.region}&show_deleted=false`;
+    // Use POST with body as shown in Happoshu API documentation
+    const url = `${HAPPOSHU_CONFIG.baseURL}${HAPPOSHU_CONFIG.endpoint}?region=${HAPPOSHU_CONFIG.region}&show_deleted=false`;
     console.log('Happoshu: Fetching location from', url);
+    console.log('Happoshu: Device name', deviceName);
     
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include' // Include cookies for Midway auth
+      credentials: 'include', // Include cookies for Midway auth
+      body: JSON.stringify({
+        switch_assets: [deviceName]
+      })
     });
 
     console.log('Happoshu: Response status', response.status, response.statusText);
