@@ -12,9 +12,13 @@ export class T1MapperWikiStack extends Stack {
     const htmlFilePath = path.join(__dirname, '..', 'index.html');
     const htmlContent = fs.readFileSync(htmlFilePath, 'utf8');
 
+    // Try using htmlContent if available, otherwise fall back to textContent
+    // Note: Wiki pages may need special handling for JavaScript execution
     const pageProps: WikiPageProps = {
       pageName: 'T1-T2-Mapper-Tool',
-      textContent: htmlContent,
+      textContent: htmlContent, // This should render the full HTML
+      // If WikiPage supports htmlContent property, use that instead:
+      // htmlContent: htmlContent,
       // Optional: set permissions, search visibility, etc.
       // permissions: ['your-team-permissions'],
       // searchable: true
