@@ -19,25 +19,7 @@ Thumbs.db
 
 # Logs
 *.log
-npm-debug.log*
 
 # Temporary files
 *.tmp
 *.temp
-
-# CDK asset staging directory
-.cdk.staging
-cdk.out
-
-# CDK version file
-cdk.context.json
-
-# Node modules
-node_modules/
-
-# Build output (compiled JS files, but keep TypeScript source)
-lib/*.js
-lib/*.d.ts
-*.js
-*.d.ts
-!bin/*.js
