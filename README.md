@@ -33,14 +33,18 @@ A web-based tool for mapping T1 device names to Mini-Rack MMC (Multi-Module Conn
 
 ## Usage
 
-1. Open `index.html` in a web browser
+1. Open `index.html` in a web browser (all CSS and JavaScript files are linked automatically)
 2. Enter a T1 device name (e.g., `sbn100-104-es-m1-p5-t1-r89`)
 3. Enter JRP/Port-Channel (e.g., `30-1` or just `30` for channel 1)
 4. Click "Calculate" to see results
 
+**Note:** All files (`index.html`, `styles.css`, and `script.js`) must be in the same directory for the application to work correctly.
+
 ## File Structure
 
-- `index.html` - Main application file with all functionality
+- `index.html` - Main HTML structure and markup
+- `styles.css` - All CSS styles and theme definitions
+- `script.js` - All JavaScript functionality and logic
 - `RACK_UNIT_MAPPINGS.md` - Complete documentation of all rack unit mappings
 - `README.md` - This file
 
@@ -50,6 +54,7 @@ A web-based tool for mapping T1 device names to Mini-Rack MMC (Multi-Module Conn
 - SVG for flow diagrams
 - Glass morphism UI design
 - Responsive layout
+- Modular file structure for better maintainability
 
 ## License
 
