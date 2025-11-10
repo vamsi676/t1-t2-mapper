@@ -22,11 +22,13 @@ const HAPPOSHU_CONFIG = {
   endpoint: '/happoshu/api/simplified/query/switch_assets',
   region: 'CMH',
   cache: new Map(),
-  cacheTimeout: 5 * 60 * 1000 // 5 minutes
+  cacheTimeout: 5 * 60 * 1000, // 5 minutes
+  debounceTimer: null
 };
 
 async function fetchRackLocation(deviceName) {
   if (!deviceName || !deviceName.toLowerCase().includes('-t1-')) {
+    console.log('Happoshu: Invalid device name', deviceName);
     return null;
   }
 
@@ -34,45 +36,66 @@ async function fetchRackLocation(deviceName) {
   const cacheKey = deviceName.toLowerCase();
   const cached = HAPPOSHU_CONFIG.cache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp) < HAPPOSHU_CONFIG.cacheTimeout) {
+    console.log('Happoshu: Using cached result', cached.data);
     return cached.data;
   }
 
   try {
     const url = `${HAPPOSHU_CONFIG.baseURL}${HAPPOSHU_CONFIG.endpoint}?switch_assets=${encodeURIComponent(deviceName)}&region=${HAPPOSHU_CONFIG.region}&show_deleted=false`;
+    console.log('Happoshu: Fetching location from', url);
     
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      credentials: 'include' // Include cookies for Midway auth
     });
 
+    console.log('Happoshu: Response status', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+      const errorText = await response.text();
+      console.error('Happoshu: API error', response.status, errorText);
+      throw new Error(`API returned ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Happoshu: API response', data);
     
-    // Cache the result
-    if (data && data.length > 0) {
-      const locationData = {
+    // Handle different response formats
+    let locationData = null;
+    if (Array.isArray(data) && data.length > 0) {
+      locationData = {
         location: data[0].location || null,
         rack_asset_id: data[0].rack_asset_id || null,
         asset_id: data[0].asset_id || null,
         serial_number: data[0].serial_number || null
       };
-      
+    } else if (data && typeof data === 'object') {
+      // Handle object response format
+      locationData = {
+        location: data.location || null,
+        rack_asset_id: data.rack_asset_id || null,
+        asset_id: data.asset_id || null,
+        serial_number: data.serial_number || null
+      };
+    }
+    
+    // Cache the result
+    if (locationData && locationData.location) {
       HAPPOSHU_CONFIG.cache.set(cacheKey, {
         data: locationData,
         timestamp: Date.now()
       });
-      
+      console.log('Happoshu: Cached location', locationData);
       return locationData;
     }
     
+    console.log('Happoshu: No location found in response');
     return null;
   } catch (error) {
-    console.warn('Happoshu API error:', error);
+    console.error('Happoshu API error:', error);
     return null;
   }
 }
@@ -81,35 +104,50 @@ function displayRackLocation(deviceName) {
   const locationDiv = document.getElementById('rackLocation');
   const locationText = document.getElementById('locationText');
   
-  if (!locationDiv || !locationText) return;
+  console.log('displayRackLocation called with:', deviceName);
+  
+  if (!locationDiv || !locationText) {
+    console.error('Location UI elements not found!');
+    return;
+  }
   
   if (!deviceName || !deviceName.toLowerCase().includes('-t1-')) {
+    console.log('Hiding location - invalid device name');
     locationDiv.style.display = 'none';
     return;
   }
   
   // Show loading state
+  console.log('Showing loading state');
   locationDiv.style.display = 'block';
   locationText.textContent = 'Loading location...';
   locationText.style.color = '#6b7280';
   
   fetchRackLocation(deviceName).then(locationData => {
+    console.log('Location data received:', locationData);
     if (locationData && locationData.location) {
       locationText.textContent = `Location: ${locationData.location}`;
       locationText.style.color = '';
       // Apply theme color
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       locationText.style.color = isDark ? '#93c5fd' : '#1e40af';
+      console.log('Location displayed:', locationData.location);
     } else {
       locationText.textContent = 'Location not found';
       locationText.style.color = '#9ca3af';
+      console.log('Location not found in API response');
       // Hide after 3 seconds if not found
       setTimeout(() => {
         locationDiv.style.display = 'none';
       }, 3000);
     }
-  }).catch(() => {
-    locationDiv.style.display = 'none';
+  }).catch((error) => {
+    console.error('Error displaying location:', error);
+    locationText.textContent = 'Error fetching location';
+    locationText.style.color = '#ef4444';
+    setTimeout(() => {
+      locationDiv.style.display = 'none';
+    }, 3000);
   });
 }
 
@@ -179,9 +217,17 @@ function displayRackLocation(deviceName) {
       const calcBtn = document.getElementById('calc');
       if (calcBtn) calcBtn.disabled = hasErrors;
       
-      // Fetch rack location when device is valid
+      // Fetch rack location when device is valid (with debounce)
       if (dev && dev.toLowerCase().includes('-t1-') && !devErr && !pErr && !rErr) {
-        displayRackLocation(dev);
+        // Clear existing timer
+        if (HAPPOSHU_CONFIG.debounceTimer) {
+          clearTimeout(HAPPOSHU_CONFIG.debounceTimer);
+        }
+        // Debounce API call - wait 500ms after user stops typing
+        HAPPOSHU_CONFIG.debounceTimer = setTimeout(() => {
+          console.log('Triggering location fetch for:', dev);
+          displayRackLocation(dev);
+        }, 500);
       } else {
         const locationDiv = document.getElementById('rackLocation');
         if (locationDiv) locationDiv.style.display = 'none';
