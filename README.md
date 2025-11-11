@@ -15,9 +15,9 @@ A web-based tool for mapping T1 device names to Mini-Rack MMC (Multi-Module Conn
 ## Supported Rack Units
 
 ### Standard Rack Units (R1-R24):
-- **RU45:** R1-R8 (Groups 1-2)
-- **RU44:** R9-R16 (Groups 3-4)
-- **RU43:** R17-R24 (Groups 5-6)
+- **RU45:** R1-R8 (T2 JRP 1-2)
+- **RU44:** R9-R16 (T2 JRP 3-4)
+- **RU43:** R17-R24 (T2 JRP 5-6)
 
 ### Higher Rack Units:
 - **RU41:** R25-R29, R41-R42 (7 racks)
