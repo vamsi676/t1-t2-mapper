@@ -375,6 +375,8 @@
     .flowPath.cable8 { stroke: #000000 !important; }
     html[data-theme="dark"] .flowPath.cable8 { stroke: #4b5563 !important; }
     @keyframes flowPath { 0% { stroke-dashoffset: 24; } 100% { stroke-dashoffset: 0; } }
+    /* Disable animation for Mini-Rack to NDF paths - same format as T1 to Mini-Rack (no animation) */
+    #miniToNdfPaths .flowPath.active { animation: none !important; }
     /* Color classes for text labels */
     .flowLabel.cable1 { fill: #1e3a8a !important; }
     html[data-theme="dark"] .flowLabel.cable1 { fill: #3b82f6 !important; }
@@ -398,25 +400,17 @@
     html[data-theme="dark"] .flowLabel { fill: #9aa6c1; }
     .flowLabel.highlight { fill: #3b82f6; font-weight: 700; font-size: 12px; }
     html[data-theme="dark"] .flowLabel.highlight { fill: #60a5fa; }
-    /* Tooltip for Associated T1 Racks */
-    #associatedT1RacksTitle:hover + rect#t1RacksTooltip,
-    #associatedT1RacksTitle:hover ~ foreignObject {
-      opacity: 1 !important;
-    }
-    #associatedT1Racks:hover rect#t1RacksTooltip,
-    #associatedT1Racks:hover foreignObject {
-      opacity: 1 !important;
-    }
-    html[data-theme="light"] rect#t1RacksTooltip {
-      fill: rgba(255,255,255,0.98);
-      stroke: rgba(59,130,246,0.4);
-    }
-    html[data-theme="light"] foreignObject div {
-      color: #0b1220;
-    }
-    html[data-theme="light"] foreignObject div strong {
-      color: #1e40af;
-    }
+/* Tooltip for Associated T1 Racks - now positioned to the right of Mini-Rack boxes */
+html[data-theme="light"] rect#t1RacksTooltip {
+  fill: rgba(255,255,255,0.98);
+  stroke: rgba(59,130,246,0.4);
+}
+html[data-theme="light"] #t1RacksTooltipGroup foreignObject div {
+  color: #0b1220;
+}
+html[data-theme="light"] #t1RacksTooltipGroup foreignObject div strong {
+  color: #1e40af;
+}
     /* T2 box text colors - ensure white text is visible on dark background, dark text on light background */
     /* T2 info (larger text) */
     #t2Ch1Label, #t2Ch2Label, #t2Ch3Label, #t2Ch4Label, #t2Ch5Label, #t2Ch6Label, #t2Ch7Label, #t2Ch8Label,
@@ -507,6 +501,17 @@
     html[data-theme="dark"] .flowRack.active { box-shadow: 0 0 8px rgba(96,165,250,.4); }
     .flowCable { stroke: #fbbf24; stroke-width: 4; fill: none; }
     .flowCable.active { stroke: #f59e0b; animation: pulseCable 2s ease-in-out infinite; }
+    .flowCable.inactive { stroke: #9ca3af; opacity: 0.15; }
+    html[data-theme="dark"] .flowCable.inactive { stroke: #94a3b8; opacity: 0.15; }
+    /* Cable color classes for flowCable (Mini-Rack to NDF paths) */
+    .flowCable.cable1 { stroke: #1e3a8a !important; }
+    html[data-theme="dark"] .flowCable.cable1 { stroke: #3b82f6 !important; }
+    .flowCable.cable2 { stroke: #ea580c !important; }
+    html[data-theme="dark"] .flowCable.cable2 { stroke: #fdba74 !important; }
+    .flowCable.cable3 { stroke: #22c55e !important; }
+    html[data-theme="dark"] .flowCable.cable3 { stroke: #4ade80 !important; }
+    .flowCable.cable4 { stroke: #78350f !important; }
+    html[data-theme="dark"] .flowCable.cable4 { stroke: #d97706 !important; }
     @keyframes pulseCable { 0%, 100% { stroke-width: 4; opacity: 1; } 50% { stroke-width: 6; opacity: 0.8; } }
     .flowDiagramTitle { color: #6b7280; }
     html[data-theme="dark"] .flowDiagramTitle { color: #9aa6c1; }
