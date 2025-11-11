@@ -140,14 +140,11 @@
       </div>
               <div id="flowDiagramContainer" class="flowDiagram" style="display: none; margin-top: 20px;">
                 <div class="flowDiagramTitle" style="font-size: 14px; font-weight: 700; color: #6b7280; margin-bottom: 12px;">Data Flow Path</div>
-                <svg id="dataFlowDiagram" viewBox="0 0 950 760" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Associated T1 Racks (4 racks sharing same MMC) -->
-                  <g id="associatedT1Racks">
-                    <text x="50" y="30" text-anchor="middle" class="flowLabel" font-size="12" font-weight="700" fill="#9ca3af" id="associatedT1RacksTitle" style="cursor: help;">Associated T1 Racks</text>
-                    <!-- Tooltip background - positioned to the right of the rack blocks -->
-                    <rect id="t1RacksTooltip" x="90" y="25" width="110" height="200" rx="6" fill="rgba(15,23,42,0.95)" stroke="rgba(59,130,246,0.3)" stroke-width="1" opacity="0" style="pointer-events: none; transition: opacity 0.2s ease;"/>
-                    <!-- Tooltip content -->
-                    <foreignObject x="95" y="30" width="100" height="190" style="pointer-events: none; opacity: 0; transition: opacity 0.2s ease;">
+                <svg id="dataFlowDiagram" viewBox="-150 0 1100 760" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Tooltip for "Why 4 T1 Racks?" - positioned to the left of T1 Racks -->
+                  <g id="t1RacksTooltipGroup">
+                    <rect id="t1RacksTooltip" x="-120" y="243" width="110" height="200" rx="6" fill="rgba(15,23,42,0.95)" stroke="rgba(59,130,246,0.3)" stroke-width="1" opacity="0" style="pointer-events: none; transition: opacity 0.2s ease;"/>
+                    <foreignObject x="-115" y="248" width="100" height="190" style="pointer-events: none; opacity: 0; transition: opacity 0.2s ease;">
                       <div xmlns="http://www.w3.org/1999/xhtml" style="padding: 6px; font-size: 9px; line-height: 1.3; color: #e5e7eb;">
                         <div style="font-weight: 700; color: #60a5fa; margin-bottom: 5px; font-size: 10px;">Why 4 T1 Racks?</div>
                         <div style="margin-bottom: 6px; font-size: 9px;">These 4 T1 racks share the same <strong style="color: #93c5fd;">Mini-Rack MMC</strong> because they belong to the same <strong style="color: #93c5fd;">4-rack block</strong>.</div>
@@ -162,34 +159,39 @@
                         </div>
                       </div>
                     </foreignObject>
+                  </g>
+                  
+                  <!-- Associated T1 Racks (4 racks sharing same MMC) - Centered vertically -->
+                  <g id="associatedT1Racks">
+                    <text x="50" y="268" text-anchor="middle" class="flowLabel" font-size="12" font-weight="700" fill="#9ca3af" id="associatedT1RacksTitle">Associated T1 Racks</text>
                     <g class="flowNode" id="t1Rack1">
-                      <rect x="10" y="50" width="70" height="40" rx="4" class="flowRack"/>
-                      <text x="45" y="65" text-anchor="middle" class="flowLabel" id="t1R1Label" font-size="9" font-weight="600">P-R · JRP</text>
-                      <text x="45" y="80" text-anchor="middle" class="flowLabel" id="t1R1Jrp" font-size="8" fill="#9ca3af"></text>
+                      <rect x="10" y="293" width="70" height="40" rx="4" class="flowRack"/>
+                      <text x="45" y="308" text-anchor="middle" class="flowLabel" id="t1R1Label" font-size="9" font-weight="600">P-R · JRP</text>
+                      <text x="45" y="323" text-anchor="middle" class="flowLabel" id="t1R1Jrp" font-size="8" fill="#9ca3af"></text>
                     </g>
                     <g class="flowNode" id="t1Rack2">
-                      <rect x="10" y="95" width="70" height="40" rx="4" class="flowRack"/>
-                      <text x="45" y="110" text-anchor="middle" class="flowLabel" id="t1R2Label" font-size="9" font-weight="600">P-R · JRP</text>
-                      <text x="45" y="125" text-anchor="middle" class="flowLabel" id="t1R2Jrp" font-size="8" fill="#9ca3af"></text>
+                      <rect x="10" y="338" width="70" height="40" rx="4" class="flowRack"/>
+                      <text x="45" y="353" text-anchor="middle" class="flowLabel" id="t1R2Label" font-size="9" font-weight="600">P-R · JRP</text>
+                      <text x="45" y="368" text-anchor="middle" class="flowLabel" id="t1R2Jrp" font-size="8" fill="#9ca3af"></text>
                     </g>
                     <g class="flowNode" id="t1Rack3">
-                      <rect x="10" y="140" width="70" height="40" rx="4" class="flowRack"/>
-                      <text x="45" y="155" text-anchor="middle" class="flowLabel" id="t1R3Label" font-size="9" font-weight="600">P-R · JRP</text>
-                      <text x="45" y="170" text-anchor="middle" class="flowLabel" id="t1R3Jrp" font-size="8" fill="#9ca3af"></text>
+                      <rect x="10" y="383" width="70" height="40" rx="4" class="flowRack"/>
+                      <text x="45" y="398" text-anchor="middle" class="flowLabel" id="t1R3Label" font-size="9" font-weight="600">P-R · JRP</text>
+                      <text x="45" y="413" text-anchor="middle" class="flowLabel" id="t1R3Jrp" font-size="8" fill="#9ca3af"></text>
                     </g>
                     <g class="flowNode" id="t1Rack4">
-                      <rect x="10" y="185" width="70" height="40" rx="4" class="flowRack"/>
-                      <text x="45" y="200" text-anchor="middle" class="flowLabel" id="t1R4Label" font-size="9" font-weight="600">P-R · JRP</text>
-                      <text x="45" y="215" text-anchor="middle" class="flowLabel" id="t1R4Jrp" font-size="8" fill="#9ca3af"></text>
+                      <rect x="10" y="428" width="70" height="40" rx="4" class="flowRack"/>
+                      <text x="45" y="443" text-anchor="middle" class="flowLabel" id="t1R4Label" font-size="9" font-weight="600">P-R · JRP</text>
+                      <text x="45" y="458" text-anchor="middle" class="flowLabel" id="t1R4Jrp" font-size="8" fill="#9ca3af"></text>
                     </g>
                   </g>
                   
-                  <!-- Arrows from T1 racks (may be 1 or 2 depending on JRP pair) -->
+                  <!-- Arrows from T1 racks to their corresponding Mini-Racks -->
                   <g id="t1ToMiniArrows">
-                    <path id="t1Arrow1" class="flowPath inactive" d="M 80 67 L 180 120" marker-end="url(#arrowhead)"/>
-                    <path id="t1Arrow2" class="flowPath inactive" d="M 80 112 L 180 120" marker-end="url(#arrowhead)"/>
-                    <path id="t1Arrow3" class="flowPath inactive" d="M 80 157 L 180 120" marker-end="url(#arrowhead)"/>
-                    <path id="t1Arrow4" class="flowPath inactive" d="M 80 202 L 180 120" marker-end="url(#arrowhead)"/>
+                    <path id="t1Arrow1" class="flowPath inactive" d="M 80 313 L 180 313" marker-end="url(#arrowhead)"/>
+                    <path id="t1Arrow2" class="flowPath inactive" d="M 80 358 L 180 358" marker-end="url(#arrowhead)"/>
+                    <path id="t1Arrow3" class="flowPath inactive" d="M 80 403 L 180 403" marker-end="url(#arrowhead)"/>
+                    <path id="t1Arrow4" class="flowPath inactive" d="M 80 448 L 180 448" marker-end="url(#arrowhead)"/>
                   </g>
                   
                   <!-- Arrow marker definitions (multiple colors) -->
@@ -223,55 +225,91 @@
             </marker>
           </defs>
                   
-                  <!-- Mini-Rack MMC (merged from T1 JRPs) -->
-                  <g class="flowNode" id="miniRackNode">
-                    <rect x="180" y="100" width="80" height="45" rx="4" class="flowRack" id="miniRackRect"/>
-                    <text x="220" y="95" text-anchor="middle" class="flowLabel" font-size="13" font-weight="700">Mini-Rack</text>
-                    <text x="220" y="115" text-anchor="middle" class="flowLabel" font-size="10" font-weight="600">MMC</text>
-                    <text x="220" y="130" text-anchor="middle" class="flowLabel" id="mmcLabel" font-size="11" font-weight="700">MMC</text>
-                    <circle cx="260" cy="120" r="4" fill="#f59e0b" id="miniRackPort"/>
+                  <!-- Mini-Rack MMC boxes (4 separate boxes, one for each T1 rack) - Centered vertically -->
+                  <g id="miniRackNodes">
+                    <!-- Single "Mini-Rack" label above all boxes -->
+                    <text x="220" y="268" text-anchor="middle" class="flowLabel" font-size="13" font-weight="700" fill="#9ca3af">Mini-Rack</text>
+                    
+                    <!-- Mini-Rack 1 (aligned with T1 Rack 1) -->
+                    <g class="flowNode" id="miniRackNode1">
+                      <rect x="180" y="293" width="80" height="40" rx="4" class="flowRack" id="miniRackRect1"/>
+                      <text x="220" y="305" text-anchor="middle" class="flowLabel" font-size="9" font-weight="600">MMC</text>
+                      <text x="220" y="318" text-anchor="middle" class="flowLabel" id="mmcLabel1" font-size="10" font-weight="700">MMC</text>
+                      <circle cx="260" cy="313" r="4" fill="#f59e0b" id="miniRackPort1"/>
+                    </g>
+                    <!-- Mini-Rack 2 (aligned with T1 Rack 2) -->
+                    <g class="flowNode" id="miniRackNode2">
+                      <rect x="180" y="338" width="80" height="40" rx="4" class="flowRack" id="miniRackRect2"/>
+                      <text x="220" y="350" text-anchor="middle" class="flowLabel" font-size="9" font-weight="600">MMC</text>
+                      <text x="220" y="363" text-anchor="middle" class="flowLabel" id="mmcLabel2" font-size="10" font-weight="700">MMC</text>
+                      <circle cx="260" cy="358" r="4" fill="#f59e0b" id="miniRackPort2"/>
+                    </g>
+                    <!-- Mini-Rack 3 (aligned with T1 Rack 3) -->
+                    <g class="flowNode" id="miniRackNode3">
+                      <rect x="180" y="383" width="80" height="40" rx="4" class="flowRack" id="miniRackRect3"/>
+                      <text x="220" y="395" text-anchor="middle" class="flowLabel" font-size="9" font-weight="600">MMC</text>
+                      <text x="220" y="408" text-anchor="middle" class="flowLabel" id="mmcLabel3" font-size="10" font-weight="700">MMC</text>
+                      <circle cx="260" cy="403" r="4" fill="#f59e0b" id="miniRackPort3"/>
+                    </g>
+                    <!-- Mini-Rack 4 (aligned with T1 Rack 4) -->
+                    <g class="flowNode" id="miniRackNode4">
+                      <rect x="180" y="428" width="80" height="40" rx="4" class="flowRack" id="miniRackRect4"/>
+                      <text x="220" y="440" text-anchor="middle" class="flowLabel" font-size="9" font-weight="600">MMC</text>
+                      <text x="220" y="453" text-anchor="middle" class="flowLabel" id="mmcLabel4" font-size="10" font-weight="700">MMC</text>
+                      <circle cx="260" cy="448" r="4" fill="#f59e0b" id="miniRackPort4"/>
+                    </g>
                   </g>
                   
-                  <!-- Trunk Cable to NDF -->
-                  <path id="trunkPath" class="flowCable inactive" d="M 260 120 Q 340 100 400 80 Q 440 80 470 80" stroke-dasharray="6 3"/>
+                  <!-- Cables from Mini-Racks to NDF (4 separate straight horizontal paths - same format as T1 to Mini-Rack) -->
+                  <g id="miniToNdfPaths">
+                    <path id="miniToNdfPath1" class="flowPath inactive" d="M 260 313 L 455 313" stroke-dasharray="6 3" marker-end="url(#arrowhead)"/>
+                    <path id="miniToNdfPath2" class="flowPath inactive" d="M 260 358 L 455 358" stroke-dasharray="6 3" marker-end="url(#arrowhead)"/>
+                    <path id="miniToNdfPath3" class="flowPath inactive" d="M 260 403 L 455 403" stroke-dasharray="6 3" marker-end="url(#arrowhead)"/>
+                    <path id="miniToNdfPath4" class="flowPath inactive" d="M 260 448 L 455 448" stroke-dasharray="6 3" marker-end="url(#arrowhead)"/>
+                  </g>
                   
-                  <!-- NDF with 4 cables -->
+                  <!-- NDF with 4 cables (centered between Mini-Rack and T2) - Centered vertically -->
                   <g class="flowNode" id="ndfNode">
-                    <rect x="470" y="50" width="100" height="70" rx="4" class="flowRack" id="ndfRect"/>
-                    <text x="520" y="40" text-anchor="middle" class="flowLabel" font-size="13" font-weight="700">NDF (4 MMC * 8MPO)</text>
-                    <text x="520" y="60" text-anchor="middle" class="flowLabel" font-size="10" font-weight="600">RU · MMC</text>
-                    <text x="520" y="78" text-anchor="middle" class="flowLabel" id="ndfLabel" font-size="11" font-weight="700">RU · MMC</text>
-                    <text x="520" y="95" text-anchor="middle" class="flowLabel" id="ndfCableLabel" font-size="9" font-weight="600" fill="#9ca3af">cable</text>
+                    <rect x="455" y="293" width="100" height="175" rx="4" class="flowRack" id="ndfRect"/>
+                    <text x="505" y="268" text-anchor="middle" class="flowLabel" font-size="13" font-weight="700">NDF (4 MMC * 8MPO)</text>
+                    <text x="505" y="355" text-anchor="middle" class="flowLabel" font-size="10" font-weight="600">RU · MMC</text>
+                    <text x="505" y="373" text-anchor="middle" class="flowLabel" id="ndfLabel" font-size="11" font-weight="700">RU · MMC</text>
+                    <text x="505" y="390" text-anchor="middle" class="flowLabel" id="ndfCableLabel" font-size="9" font-weight="600" fill="#9ca3af">cable</text>
                     
-                    <!-- 4 input cables from trunk -->
-                    <circle cx="470" cy="70" r="4" fill="#10b981"/>
-                    <circle cx="470" cy="80" r="4" fill="#10b981"/>
-                    <circle cx="470" cy="90" r="4" fill="#10b981"/>
-                    <circle cx="470" cy="100" r="4" fill="#10b981"/>
+                    <!-- 4 input cables from Mini-Rack (aligned with Mini-Rack ports, positioned on left edge) -->
+                    <circle cx="455" cy="313" r="4" fill="#10b981"/>
+                    <circle cx="455" cy="358" r="4" fill="#10b981"/>
+                    <circle cx="455" cy="403" r="4" fill="#10b981"/>
+                    <circle cx="455" cy="448" r="4" fill="#10b981"/>
                     
-                    <!-- 4 output cables to T2 -->
-                    <circle cx="570" cy="70" r="4" fill="#3b82f6"/>
-                    <circle cx="570" cy="80" r="4" fill="#3b82f6"/>
-                    <circle cx="570" cy="90" r="4" fill="#3b82f6"/>
-                    <circle cx="570" cy="100" r="4" fill="#3b82f6"/>
+                    <!-- 8 output cables to T2 (positioned on right edge, 4 top and 4 bottom) -->
+                    <circle cx="555" cy="320" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="340" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="360" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="380" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="400" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="420" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="440" r="4" fill="#3b82f6"/>
+                    <circle cx="555" cy="460" r="4" fill="#3b82f6"/>
                   </g>
                   
-                  <!-- Mesh Shuffle (8 dotted paths from NDF to T2) -->
+                  <!-- Mesh Shuffle (8 dotted paths from NDF to T2) - 4 to top T2 boxes, 4 to bottom T2 boxes -->
                   <g id="ndfToT2Paths">
-                    <path id="ndfToT2Path1" class="flowPath active" d="M 570 80 Q 660 70 750 80" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path2" class="flowPath active" d="M 570 85 Q 660 140 750 170" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path3" class="flowPath active" d="M 570 90 Q 660 210 750 260" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path4" class="flowPath active" d="M 570 95 Q 660 280 750 350" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path5" class="flowPath active" d="M 570 100 Q 660 350 750 440" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path6" class="flowPath active" d="M 570 105 Q 660 420 750 530" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path7" class="flowPath active" d="M 570 110 Q 660 490 750 620" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
-                    <path id="ndfToT2Path8" class="flowPath active" d="M 570 115 Q 660 560 750 710" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path1" class="flowPath active" d="M 555 320 Q 650 80 750 80" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path2" class="flowPath active" d="M 555 340 Q 650 170 750 170" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path3" class="flowPath active" d="M 555 360 Q 650 260 750 260" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path4" class="flowPath active" d="M 555 380 Q 650 350 750 350" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path5" class="flowPath active" d="M 555 400 Q 650 440 750 440" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path6" class="flowPath active" d="M 555 420 Q 650 530 750 530" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path7" class="flowPath active" d="M 555 440 Q 650 620 750 620" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
+                    <path id="ndfToT2Path8" class="flowPath active" d="M 555 460 Q 650 710 750 710" marker-end="url(#arrowhead)" stroke-dasharray="6 3" stroke="#9ca3af" opacity="0.8"/>
                   </g>
                   
-                  <!-- Associated T2 Channels (8 channels - Vertical Stack) -->
+                  <!-- Associated T2 Channels (8 channels - 4 top, 4 bottom) -->
                   <g id="associatedT2Channels">
                     <text x="810" y="30" text-anchor="middle" class="flowLabel" font-size="12" font-weight="700" fill="#9ca3af">T2 Channels (T1 JRP-Channel Mapping)</text>
                     
+                    <!-- Top 4 T2 Channels -->
                     <g class="flowNode" id="t2Channel1">
                       <rect x="750" y="40" width="140" height="80" rx="10" class="flowRack" id="t2Rect1"/>
                       <text x="758" y="65" text-anchor="start" class="flowLabel" id="t2Ch1Label" font-size="12" font-weight="700" fill="white">P#-T2-R#</text>
@@ -297,6 +335,7 @@
                       <text x="882" y="338" text-anchor="end" class="flowLabel" id="t2Ch4T1Info" font-size="9" fill="white" font-weight="700" opacity="0.8">T1:--</text>
                     </g>
                     
+                    <!-- Bottom 4 T2 Channels -->
                     <g class="flowNode" id="t2Channel5">
                       <rect x="750" y="400" width="140" height="80" rx="10" class="flowRack" id="t2Rect5"/>
                       <text x="758" y="425" text-anchor="start" class="flowLabel" id="t2Ch5Label" font-size="12" font-weight="700" fill="white">P#-T2-R#</text>
@@ -324,7 +363,6 @@
                   </g>
                   
                   <!-- Main flow paths (trunk cable section) -->
-                  <path id="miniToNdfPath" class="flowPath inactive" d="M 260 120 Q 340 100 400 80 Q 440 80 460 80 L 470 80"/>
                 </svg>
               </div>
             </div>

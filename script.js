@@ -90,10 +90,10 @@
       const { P, R } = parseFields(dev);
     console.log(`Input: dev="${dev}", jrpInput="${jrpInput}", parsed: j=${j}, channel=${channel}, P=${P}, R=${R}`);
       
-      // NDF Mapping supported for Racks 1–42, 51, 61–85, 86–96, 99–100, 101–102, 106–107, 111–112, 114
+      // NDF Mapping supported for Racks 1–42, 51, 61–85, 86–98, 99–100, 101–102, 106–107, 111–112, 114
       const isExplicitlyMapped = (R >= 1 && R <= 42) || (R === 51) || 
                            (R >= 61 && R <= 70) || (R >= 71 && R <= 79) || 
-                           (R >= 80 && R <= 85) || (R >= 86 && R <= 96) || (R >= 99 && R <= 100) || 
+                           (R >= 80 && R <= 85) || (R >= 86 && R <= 98) || (R >= 99 && R <= 100) || 
                            (R === 101) || (R === 102) || (R === 106) || (R === 107) || (R === 111) || (R === 112) || (R === 114);
       const allowNDF = isExplicitlyMapped; 
       
@@ -565,12 +565,12 @@
           // Store results only if we successfully calculated all values
           window._ndfResult = {RU: NDF_RU, MMC: NDF_MMC, Range: NDF_range, Cable: cable, Group: NDF_GROUP };
           // Debug log for successful calculation
-          console.log(`✓ NDF → R${R}, T2 JRP ${NDF_GROUP}, Key ${key}, Pair found: true, RU ${NDF_RU}, MMC ${NDF_MMC}, Range [${NDF_range[0]}, ${NDF_range[1]}], Plane ${(P%2===0)?'even':'odd'}, Cable ${cable}`);
+          console.log(`✓ NDF → R${R}, Group ${NDF_GROUP}, Key ${key}, Pair found: true, RU ${NDF_RU}, MMC ${NDF_MMC}, Range [${NDF_range[0]}, ${NDF_range[1]}], Plane ${(P%2===0)?'even':'odd'}, Cable ${cable}`);
         } else {
           // No valid pair found - store with null values but keep Group for error message
           window._ndfResult = {RU: NDF_RU, MMC: null, Range: [null, null], Cable: null, Group: NDF_GROUP };
           // Debug log for failed lookup
-          console.log(`✗ NDF → R${R}, T2 JRP ${NDF_GROUP}, Key ${key}, Pair found: false, RU ${NDF_RU}, MMC null - KEY NOT FOUND IN ndfRanges!`);
+          console.log(`✗ NDF → R${R}, Group ${NDF_GROUP}, Key ${key}, Pair found: false, RU ${NDF_RU}, MMC null - KEY NOT FOUND IN ndfRanges!`);
         }
       } else {
         window._ndfResult = null;
@@ -828,11 +828,14 @@
             displayedRU = 16; // RU16 for R111
           }
           
-          // Hide channel summary and flow diagram when main NDF fails
+          // Hide channel summary when main NDF fails, but still show flow diagram
           const summaryWrapper = document.getElementById('ndfChannelSummary');
           if (summaryWrapper) summaryWrapper.style.display = 'none';
-          const flowContainer = document.getElementById('flowDiagramContainer');
-          if (flowContainer) flowContainer.style.display = 'none';
+          
+          // Still show flow diagram even if NDF mapping is incomplete
+          // Use displayedRU or '—' for ndfRU, and null for ndfMMC
+          const ndfRUForDiagram = (R < 1 || R > 128) ? '—' : displayedRU;
+          updateFlowDiagram(dev, P, R, j, channel, MMC, ndfRUForDiagram, null, JRP_T2, CH_T2, RU_T2);
           
           ndfRU.textContent = (R < 1 || R > 51) ? '—' : displayedRU; 
           ndfMMC.textContent = '—';
@@ -841,9 +844,21 @@
           ndfRange.textContent = '—';
           const isSupported = allowNDF;
           ndfNote.textContent = !isSupported
-            ? `NDF mapping is supported for Racks 1–42, 51, 61–85, 86–96, 99–100, 101–102, 106–107, 111–112, and 114 of T1. R${R} mapping is not defined.`
+            ? `NDF mapping is supported for Racks 1–42, 51, 61–85, 86–98, 99–100, 101–102, 106–107, 111–112, and 114 of T1. R${R} mapping is not defined.`
             : `R${R} found in T2 JRP ${window._ndfResult ? window._ndfResult.Group : tempNDFGroup} but an explicit mapping is missing (key ${tempNDFGroup}-${CH_T2}).`;
+          
+          // Still show flow diagram even if NDF is not supported
+          if (!isSupported) {
+            updateFlowDiagram(dev, P, R, j, channel, MMC, '—', null, JRP_T2, CH_T2, RU_T2);
+          }
         }
+      }
+      
+      // Always show flow diagram after compute completes (even if NDF panel wasn't shown)
+      // This ensures the diagram appears for all searches
+      if (!ndfOut) {
+        console.log('NDF panel not found, showing flow diagram anyway');
+        updateFlowDiagram(dev, P, R, j, channel, MMC, '—', null, JRP_T2, CH_T2, RU_T2);
       }
     
       // Render MMC mini-diagram
@@ -990,7 +1005,7 @@
           // Skip racks outside the supported range or in gaps
           const isExplicitlyMapped = (R_temp >= 1 && R_temp <= 42) || (R_temp === 51) || 
                            (R_temp >= 61 && R_temp <= 70) || (R_temp >= 71 && R_temp <= 79) || 
-                           (R_temp >= 80 && R_temp <= 85) || (R_temp >= 86 && R_temp <= 96) || (R_temp >= 99 && R_temp <= 100) || 
+                           (R_temp >= 80 && R_temp <= 85) || (R_temp >= 86 && R_temp <= 98) || (R_temp >= 99 && R_temp <= 100) || 
                            (R_temp === 101) || (R_temp === 102) || (R_temp === 106) || (R_temp === 107) || (R_temp === 111) || (R_temp === 112) || (R_temp === 114);
           if (!isExplicitlyMapped) {
               isFullyMapped = false;
@@ -1229,8 +1244,13 @@
     
     // Render data flow diagram with associated racks and cables (8 T2 RUs for JRP Pairs)
     function updateFlowDiagram(dev, P, R, j, channel, MMC, ndfRU, ndfMMC, JRP_T2, CH_T2, RU_T2) {
+      console.log('updateFlowDiagram called with:', { dev, P, R, j, channel, MMC, ndfRU, ndfMMC, JRP_T2, CH_T2, RU_T2 });
       const flowContainer = document.getElementById('flowDiagramContainer');
-      if (!flowContainer) return;
+      if (!flowContainer) {
+        console.error('flowDiagramContainer not found!');
+        return;
+      }
+      console.log('flowDiagramContainer found, proceeding...');
       
       // Extract base name for T2 device construction
       const baseMatch = dev.match(/^(.+)-t1-/i);
@@ -1252,19 +1272,15 @@
       window._flowDiagramData = { ndfData: {} };
       
       // --- 1. Update NDF & Mini-Rack Labels ---
-      // Update all 4 Mini-Rack MMC labels (same MMC value for all, but each box shows it)
-      for (let i = 1; i <= 4; i++) {
-        const mmcLabel = document.getElementById(`mmcLabel${i}`);
-        if (mmcLabel) mmcLabel.textContent = `MMC ${MMC}`;
-      }
-      
+      const mmcLabel = document.getElementById('mmcLabel');
       const ndfLabel = document.getElementById('ndfLabel');
       const ndfCableLabel = document.getElementById('ndfCableLabel');
       
+      if (mmcLabel) mmcLabel.textContent = `MMC ${MMC}`;
       if (ndfLabel) ndfLabel.textContent = ndfRU && ndfMMC ? `RU${ndfRU} · MMC ${ndfMMC}` : 'RU · MMC';
       
       const cableClass = (CH_T2 >= 1 && CH_T2 <= 4) ? `cable${CH_T2}` : '';
-      ['ndfLabel', 'ndfCableLabel'].forEach(id => {
+      ['mmcLabel', 'ndfLabel', 'ndfCableLabel'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.classList.remove('cable1', 'cable2', 'cable3', 'cable4');
@@ -1277,53 +1293,13 @@
         }
       });
       
-      // Update all 4 Mini-Rack MMC label colors
-      for (let i = 1; i <= 4; i++) {
-        const mmcLabel = document.getElementById(`mmcLabel${i}`);
-        if (mmcLabel) {
-          mmcLabel.classList.remove('cable1', 'cable2', 'cable3', 'cable4');
-          // Each mini-rack box gets colored based on its channel (1-4)
-          if (i >= 1 && i <= 4) {
-            mmcLabel.classList.add(`cable${i}`);
-          }
-        }
-      }
-      
       // Color coding for flow paths (only coloring the active T1 Rack's path)
-      // Update 4 separate mini-rack to NDF paths - match T1 rack colors and arrow format
-      const miniToNdfPaths = ['miniToNdfPath1', 'miniToNdfPath2', 'miniToNdfPath3', 'miniToNdfPath4'];
-      const rackIndex = R - R_base; // Index of the user-requested rack (0-3)
-      miniToNdfPaths.forEach((id, idx) => {
+      ['trunkPath', 'miniToNdfPath'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          const R_temp = R_base + idx;
-          const CH_T2_temp = ((R_temp - 1) % 4) + 1; // Channel 1-4, which corresponds to cable 1-4
-          const isCurrentPath = (idx === rackIndex); // This is the user-requested rack's path
-          const pathCableClass = (CH_T2_temp >= 1 && CH_T2_temp <= 4) ? `cable${CH_T2_temp}` : '';
-          
           el.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'inactive', 'active');
-          el.setAttribute('stroke-dasharray', '6 3');
-          
-          if (pathCableClass) {
-            // Always apply the cable color (matches T1 rack color)
-            el.classList.add(pathCableClass);
-          }
-          
-          if (isCurrentPath) {
-            // User-requested path: fully visible with cable color and matching arrow
-            el.classList.add('active');
-            el.style.opacity = '1';
-            el.style.strokeWidth = '3.5';
-            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
-              el.setAttribute('marker-end', `url(#arrowhead${CH_T2_temp})`);
-            }
-          } else {
-            // Other paths: very faded but still show the cable color
-            el.classList.add('inactive');
-            el.style.opacity = '0.15';
-            el.style.strokeWidth = '2';
-            el.setAttribute('marker-end', 'url(#arrowhead)');
-          }
+          if (cableClass) el.classList.add(cableClass, 'active');
+          else el.classList.add('inactive');
         }
       });
       
@@ -1395,11 +1371,14 @@
         // Update corresponding Mini-Rack box (MMC value is the same for all 4, but we show it in each box)
         const miniRackRect = document.getElementById(`miniRackRect${i+1}`);
         const miniRackMmcLabel = document.getElementById(`mmcLabel${i+1}`);
+        const isCurrentT1ForMiniRack = (R_temp === R);
         if (miniRackRect) {
-          miniRackRect.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'highlight', 'userRequested');
+          miniRackRect.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'highlight', 'userRequested', 'inactive');
           if (CH_T2_temp >= 1 && CH_T2_temp <= 4) miniRackRect.classList.add(`cable${CH_T2_temp}`);
-          if (R_temp === R) {
+          if (isCurrentT1ForMiniRack) {
             miniRackRect.classList.add('active', 'highlight', 'userRequested');
+          } else {
+            miniRackRect.classList.add('inactive');
           }
         }
         if (miniRackMmcLabel) {
@@ -1409,14 +1388,34 @@
             miniRackMmcLabel.classList.add(`cable${CH_T2_temp}`);
           }
         }
+        
+        // Update Mini-Rack to NDF paths - each path uses its corresponding cable color
+        const miniToNdfPath = document.getElementById(`miniToNdfPath${i+1}`);
+        if (miniToNdfPath) {
+          const pathCableClass = (CH_T2_temp >= 1 && CH_T2_temp <= 4) ? `cable${CH_T2_temp}` : '';
+          miniToNdfPath.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'inactive');
+          miniToNdfPath.setAttribute('stroke-dasharray', '6 3');
+          miniToNdfPath.style.display = '';
+          if (isCurrentT1ForMiniRack) {
+            miniToNdfPath.classList.add('active', pathCableClass);
+            miniToNdfPath.style.opacity = '1';
+            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
+              miniToNdfPath.setAttribute('marker-end', `url(#arrowhead${CH_T2_temp})`);
+            }
+          } else {
+            miniToNdfPath.classList.add('inactive');
+            miniToNdfPath.style.opacity = '0.15';
+            miniToNdfPath.setAttribute('marker-end', 'url(#arrowhead)');
+          }
+        }
+        
+        // T1 to Mini-Rack arrows are already handled above in the setup section (lines 1532-1556)
+        // No need to process them again here
       }
       
-      // Add second arrow for JRP pair merging (if applicable)
+      // Remove any existing merge arrow (no longer needed)
       const existingMerge = document.getElementById('t1MergeArrow');
       if (existingMerge) existingMerge.remove();
-      
-      // Note: JRP pair merging is no longer needed since each T1 rack connects to its own mini-rack
-      // The merge arrow logic is removed as it doesn't apply to the new 4-box layout
       
       // --- 3. T2 Channels (Right Side - Expanded to 8 Blocks) ---
       const T2_CHANNEL_IDS = ['t2Channel1', 't2Channel2', 't2Channel3', 't2Channel4', 't2Channel5', 't2Channel6', 't2Channel7', 't2Channel8'];
@@ -1555,7 +1554,7 @@
       });
       
       // Highlight racks
-      const racks = ['miniRackRect1', 'miniRackRect2', 'miniRackRect3', 'miniRackRect4', 'ndfRect'];
+      const racks = ['miniRackRect', 'ndfRect'];
       racks.forEach(id => {
         const rack = document.getElementById(id);
         if (rack) rack.classList.add('highlight');
@@ -1564,15 +1563,23 @@
       // Ensure click handlers are properly attached after diagram is fully updated
       attachT1RackClickHandlers();
       
-      // Show diagram
+      // Show diagram - use multiple methods to ensure it's visible
+      console.log('Setting flowContainer.style.display = "block"');
       flowContainer.style.display = 'block';
+      flowContainer.style.visibility = 'visible';
+      flowContainer.setAttribute('style', 'display: block !important; margin-top: 20px;');
+      console.log('flowContainer display after setting:', flowContainer.style.display);
+      console.log('flowContainer computed style:', window.getComputedStyle(flowContainer).display);
+      
+      // Force a reflow to ensure the display change takes effect
+      void flowContainer.offsetWidth;
     }
     
     // Calculate NDF for a specific rack (reusable function)
     function calculateNDFForRack(P, R, j, CH_T2) {
       const isExplicitlyMapped = (R >= 1 && R <= 42) || (R === 51) || 
                            (R >= 61 && R <= 70) || (R >= 71 && R <= 79) || 
-                           (R >= 80 && R <= 85) || (R >= 86 && R <= 96) || (R >= 99 && R <= 100) || 
+                           (R >= 80 && R <= 85) || (R >= 86 && R <= 98) || (R >= 99 && R <= 100) || 
                            (R === 101) || (R === 102) || (R === 106) || (R === 107) || (R === 111) || (R === 112) || (R === 114);
       const allowNDF = isExplicitlyMapped;
       if (!allowNDF) return { RU: '—', MMC: null, Range: [null, null], Cable: null, Group: 0 };
@@ -2152,92 +2159,57 @@
         }
       });
       
-      // Color Mini-Rack to NDF paths (4 separate paths) - match T1 rack colors and arrow format
-      // Each path should use the same cable color as its corresponding T1 rack
-      const miniToNdfPaths = ['miniToNdfPath1', 'miniToNdfPath2', 'miniToNdfPath3', 'miniToNdfPath4'];
-      miniToNdfPaths.forEach((id, idx) => {
-        const pathEl = document.getElementById(id);
-        if (pathEl) {
-          const R_temp = R_base + idx;
-          const CH_T2_temp = ((R_temp - 1) % 4) + 1; // Channel 1-4, which corresponds to cable 1-4
-          const isCurrentPath = (idx === rackIndex); // This is the clicked rack's path
-          const pathCableClass = (CH_T2_temp >= 1 && CH_T2_temp <= 4) ? `cable${CH_T2_temp}` : '';
-          
-          pathEl.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'inactive', 'active');
-          pathEl.setAttribute('stroke-dasharray', '6 3');
-          
-          if (pathCableClass) {
-            // Always apply the cable color (matches T1 rack color)
-            pathEl.classList.add(pathCableClass);
-          }
-          
-          if (isCurrentPath) {
-            // Clicked rack's path: fully visible with cable color and matching arrow
-            pathEl.classList.add('active');
-            pathEl.style.opacity = '1';
-            pathEl.style.strokeWidth = '3.5';
-            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
-              pathEl.setAttribute('marker-end', `url(#arrowhead${CH_T2_temp})`);
-            }
-          } else {
-            // Other paths: very faded but still show the cable color
-            pathEl.classList.add('inactive');
-            pathEl.style.opacity = '0.15';
-            pathEl.style.strokeWidth = '2';
-            pathEl.setAttribute('marker-end', 'url(#arrowhead)');
-          }
-        }
-      });
-      
-      // Update Mini-Rack boxes highlighting - highlight the clicked one
-      const miniRackRects = ['miniRackRect1', 'miniRackRect2', 'miniRackRect3', 'miniRackRect4'];
-      miniRackRects.forEach((id, idx) => {
-        const miniRackRect = document.getElementById(id);
-        if (miniRackRect) {
-          const R_temp = R_base + idx;
-          const CH_T2_temp = ((R_temp - 1) % 4) + 1;
-          
-          // Remove all classes
-          miniRackRect.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'highlight', 'userRequested', 'inactive');
-          
-          if (idx === rackIndex) {
-            // This is the clicked rack's mini-rack box - highlight it
-            miniRackRect.classList.add('active', 'highlight', 'userRequested');
-            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
-              miniRackRect.classList.add(`cable${CH_T2_temp}`);
-            }
-          } else {
-            // Other mini-rack boxes: faded
-            miniRackRect.classList.add('inactive');
-            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
-              miniRackRect.classList.add(`cable${CH_T2_temp}`);
-            }
-          }
-        }
-      });
-      
-      // Color Mini-Rack MMC labels (4 separate labels) - based on clicked rack
-      for (let i = 1; i <= 4; i++) {
-        const mmcLabel = document.getElementById(`mmcLabel${i}`);
-        if (mmcLabel) {
-          const idx = i - 1;
-          const R_temp = R_base + idx;
-          const CH_T2_temp = ((R_temp - 1) % 4) + 1;
-          const isCurrentLabel = (idx === rackIndex);
-          
-          mmcLabel.classList.remove('cable1', 'cable2', 'cable3', 'cable4');
-          if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
-            mmcLabel.classList.add(`cable${CH_T2_temp}`);
-          }
-        }
+      // Color trunk cable (if it exists)
+      const trunkPath = document.getElementById('trunkPath');
+      if (trunkPath) {
+        trunkPath.classList.remove('cable1', 'cable2', 'cable3', 'cable4');
+        trunkPath.classList.add(cableClass);
       }
       
-      // Highlight NDF box based on clicked rack's cable
-      const ndfRect = document.getElementById('ndfRect');
-      if (ndfRect) {
-        ndfRect.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'highlight', 'userRequested', 'inactive');
-        if (CH_T2_clicked >= 1 && CH_T2_clicked <= 4) {
-          ndfRect.classList.add(`cable${CH_T2_clicked}`, 'active', 'highlight', 'userRequested');
+      // Color Mini-Rack boxes and paths (4 separate boxes)
+      const R_base_clicked = R_clicked - ((R_clicked - 1) % 4);
+      for (let i = 0; i < 4; i++) {
+        const R_temp = R_base_clicked + i;
+        const CH_T2_temp = ((R_temp - 1) % 4) + 1;
+        const isClicked = (R_temp === R_clicked);
+        const cableClassTemp = (CH_T2_temp >= 1 && CH_T2_temp <= 4) ? `cable${CH_T2_temp}` : '';
+        
+        // Update Mini-Rack box
+        const miniRackRect = document.getElementById(`miniRackRect${i+1}`);
+        if (miniRackRect) {
+          miniRackRect.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'highlight', 'userRequested', 'inactive');
+          if (cableClassTemp) miniRackRect.classList.add(cableClassTemp);
+          if (isClicked) {
+            miniRackRect.classList.add('active', 'highlight', 'userRequested');
+          } else {
+            miniRackRect.classList.add('inactive');
+          }
+        }
+        
+        // Update Mini-Rack MMC label
+        const mmcLabel = document.getElementById(`mmcLabel${i+1}`);
+        if (mmcLabel) {
+          mmcLabel.classList.remove('cable1', 'cable2', 'cable3', 'cable4');
+          if (cableClassTemp) mmcLabel.classList.add(cableClassTemp);
+        }
+        
+        // Update Mini-Rack to NDF path
+        const miniToNdfPath = document.getElementById(`miniToNdfPath${i+1}`);
+        if (miniToNdfPath) {
+          miniToNdfPath.classList.remove('cable1', 'cable2', 'cable3', 'cable4', 'active', 'inactive');
+          miniToNdfPath.setAttribute('stroke-dasharray', '6 3');
+          miniToNdfPath.style.display = '';
+          if (isClicked) {
+            miniToNdfPath.classList.add('active', cableClassTemp);
+            miniToNdfPath.style.opacity = '1';
+            if (CH_T2_temp >= 1 && CH_T2_temp <= 4) {
+              miniToNdfPath.setAttribute('marker-end', `url(#arrowhead${CH_T2_temp})`);
+            }
+          } else {
+            miniToNdfPath.classList.add('inactive');
+            miniToNdfPath.style.opacity = '0.15';
+            miniToNdfPath.setAttribute('marker-end', 'url(#arrowhead)');
+          }
         }
       }
       
@@ -2295,8 +2267,6 @@
       
       // Update T1 rack highlights
       const t1RackGroups = ['t1Rack1', 't1Rack2', 't1Rack3', 't1Rack4'];
-      const rackIndex = R_clicked - R_base;
-      
       for (let i = 0; i < 4; i++) {
         const R_temp = R_base + i;
         const rackGroup = document.getElementById(t1RackGroups[i]);
@@ -2306,7 +2276,7 @@
           // Remove all highlight classes
           rackRect.classList.remove('active', 'highlight', 'userRequested');
           
-          if (i === rackIndex) {
+          if (R_temp === R_clicked) {
             // Add all highlight classes for the clicked rack
             rackRect.classList.add('active', 'highlight', 'userRequested');
             console.log(`  ✓ Highlighted R${R_temp} (box ${i+1})`);
@@ -2382,7 +2352,7 @@
         // Remove dynamically created merge arrow
         const mergeArrow = document.getElementById('t1MergeArrow');
         if (mergeArrow) mergeArrow.remove();
-        ['miniRackRect1', 'miniRackRect2', 'miniRackRect3', 'miniRackRect4', 'ndfRect'].forEach(id => {
+        ['miniRackRect', 'ndfRect'].forEach(id => {
           const rack = document.getElementById(id);
           if (rack) rack.classList.remove('highlight');
         });
@@ -2680,7 +2650,7 @@
     (function initT1RacksTooltip(){
       const associatedT1Racks = document.getElementById('associatedT1Racks');
       const tooltipRect = document.getElementById('t1RacksTooltip');
-      const tooltipContent = document.querySelector('#t1RacksTooltipGroup foreignObject');
+      const tooltipContent = document.querySelector('#associatedT1Racks foreignObject');
       
       if (!associatedT1Racks || !tooltipRect || !tooltipContent) return;
       
