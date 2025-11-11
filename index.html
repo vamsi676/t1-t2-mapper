@@ -143,7 +143,25 @@
                 <svg id="dataFlowDiagram" viewBox="0 0 950 760" xmlns="http://www.w3.org/2000/svg">
                   <!-- Associated T1 Racks (4 racks sharing same MMC) -->
                   <g id="associatedT1Racks">
-                    <text x="50" y="30" text-anchor="middle" class="flowLabel" font-size="12" font-weight="700" fill="#9ca3af">Associated T1 Racks</text>
+                    <text x="50" y="30" text-anchor="middle" class="flowLabel" font-size="12" font-weight="700" fill="#9ca3af" id="associatedT1RacksTitle" style="cursor: help;">Associated T1 Racks</text>
+                    <!-- Tooltip background -->
+                    <rect id="t1RacksTooltip" x="5" y="5" width="90" height="220" rx="6" fill="rgba(15,23,42,0.95)" stroke="rgba(59,130,246,0.3)" stroke-width="1" opacity="0" style="pointer-events: none; transition: opacity 0.2s ease;"/>
+                    <!-- Tooltip content -->
+                    <foreignObject x="10" y="10" width="80" height="210" style="pointer-events: none; opacity: 0; transition: opacity 0.2s ease;">
+                      <div xmlns="http://www.w3.org/1999/xhtml" style="padding: 8px; font-size: 10px; line-height: 1.4; color: #e5e7eb;">
+                        <div style="font-weight: 700; color: #60a5fa; margin-bottom: 6px; font-size: 11px;">Why 4 T1 Racks?</div>
+                        <div style="margin-bottom: 8px;">These 4 T1 racks share the same <strong style="color: #93c5fd;">Mini-Rack MMC</strong> because they belong to the same <strong style="color: #93c5fd;">4-rack block</strong>.</div>
+                        <div style="margin-bottom: 8px; padding-left: 8px; border-left: 2px solid #3b82f6;">
+                          <div style="margin-bottom: 4px;">• Same switch pair (P)</div>
+                          <div style="margin-bottom: 4px;">• Same JRP port</div>
+                          <div style="margin-bottom: 4px;">• Sequential racks (R, R+1, R+2, R+3)</div>
+                          <div>• Different channels (1-4)</div>
+                        </div>
+                        <div style="font-size: 9px; color: #9ca3af; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(59,130,246,0.2);">
+                          Click any rack to see its NDF mapping
+                        </div>
+                      </div>
+                    </foreignObject>
                     <g class="flowNode" id="t1Rack1">
                       <rect x="10" y="50" width="70" height="40" rx="4" class="flowRack"/>
                       <text x="45" y="65" text-anchor="middle" class="flowLabel" id="t1R1Label" font-size="9" font-weight="600">P-R · JRP</text>

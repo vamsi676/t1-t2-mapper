@@ -2552,6 +2552,33 @@
       renderHistory();
     });
     
+    // Tooltip for Associated T1 Racks explanation
+    (function initT1RacksTooltip(){
+      const associatedT1Racks = document.getElementById('associatedT1Racks');
+      const tooltipRect = document.getElementById('t1RacksTooltip');
+      const tooltipContent = document.querySelector('#associatedT1Racks foreignObject');
+      
+      if (!associatedT1Racks || !tooltipRect || !tooltipContent) return;
+      
+      let tooltipVisible = false;
+      
+      function showTooltip() {
+        tooltipVisible = true;
+        tooltipRect.setAttribute('opacity', '1');
+        tooltipContent.style.opacity = '1';
+      }
+      
+      function hideTooltip() {
+        tooltipVisible = false;
+        tooltipRect.setAttribute('opacity', '0');
+        tooltipContent.style.opacity = '0';
+      }
+      
+      // Show on hover over the title or any part of the associated racks section
+      associatedT1Racks.addEventListener('mouseenter', showTooltip);
+      associatedT1Racks.addEventListener('mouseleave', hideTooltip);
+    })();
+    
     // Tab switching for NDF/T2
     (function initTabs(){
       const tabNDF = document.getElementById('tabNDF');
