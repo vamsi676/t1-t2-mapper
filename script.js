@@ -429,7 +429,11 @@
               NDF_RU = 20; // R99, R100=RU20
             }
           } else if (NDF_GROUP === 26) {
-            NDF_RU = 18; // R102=RU18
+            if (R === 101) {
+              NDF_RU = 39; // R101=RU39
+            } else if (R === 102) {
+              NDF_RU = 18; // R102=RU18
+            }
           } else if (NDF_GROUP === 27) {
             if (R === 107) {
               NDF_RU = 20; // R107=RU20
@@ -1779,7 +1783,11 @@
             NDF_RU = 20; // R99, R100=RU20
           }
         } else if (NDF_GROUP === 26) {
-          NDF_RU = 18; // R102=RU18
+          if (R === 101) {
+            NDF_RU = 39; // R101=RU39
+          } else if (R === 102) {
+            NDF_RU = 18; // R102=RU18
+          }
         } else if (NDF_GROUP === 27) {
           if (R === 107) {
             NDF_RU = 20; // R107=RU20
