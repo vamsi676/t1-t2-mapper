@@ -6,10 +6,6 @@
   <title>T1 → Mini-Rack MMC Mapper</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-  <button id="theme-switch" aria-label="Toggle theme" title="Toggle theme">
-    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Z"/></svg>
-    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Z"/></svg>
-  </button>
   <div class="bgAnim" aria-hidden="true">
     <span class="blob b1"></span>
     <span class="blob b2"></span>
@@ -18,7 +14,30 @@
   <div class="app">
     <div class="card">
       <h1 class="mainHeading">T1-T2 Mapper</h1>
-      <p class="sub">Enter a T1 device (e.g., <code>sbn100-104-es-m1-p5-t1-r89</code>) and JRP/Port-Channel (e.g., <code>30-1</code> or just <code>30</code> for channel 1). The tool maps to the Mini‑Rack MMC and spares, computes T2 uplink details, and shows NDF RU (Rack Units: RU45, RU44, RU43, RU41, RU39, RU37, RU28, RU26, RU24, RU22, RU20, RU18, RU16) and active cable range for Racks 1–42, 51, 61–85, 86–96, 99–100, 101–102, 106–107, 111–112, and 114 of T1. Use Reverse Lookup for MMC → T1, and the mini‑diagram to jump between MMCs.</p>
+      <div class="stepCard" style="margin-bottom: 18px;">
+        <div class="stepBadge">1</div>
+        <div>
+          <div class="stepTitle">Device Input & Mapping</div>
+          <div class="stepText">
+            <div style="margin-bottom: 10px;">
+              Enter a T1 device (e.g., <code>sbn100-104-es-m1-p5-t1-r89</code>) and JRP with channel (e.g., <code>30-1</code> or just <code>30</code> for channel 1). The tool maps to the Mini‑Rack MMC and spares, shows where it connects in NDF and associated T1 racks, and computes T2 uplink details.
+            </div>
+            <div style="margin-top: 12px; margin-bottom: 8px;">
+              <div style="font-weight: 700; font-size: 13px; color: #047857;">Supported:</div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr>
+                <td style="padding: 8px 12px; border: 2px solid #10b981; background: rgba(16,185,129,0.15); font-weight: 700; color: #047857; width: 40%;">NDF Rack Units</td>
+                <td style="padding: 8px 12px; border: 2px solid #10b981; background: rgba(255,255,255,0.9);">RU45, RU44, RU43, RU41, RU39, RU37, RU28, RU26, RU24, RU22, RU20, RU18, RU16</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border: 2px solid #10b981; background: rgba(16,185,129,0.15); font-weight: 700; color: #047857;">T1 Racks</td>
+                <td style="padding: 8px 12px; border: 2px solid #10b981; background: rgba(255,255,255,0.9);">1–42, 51, 61–96, 99–102, 106–107, 111–112, 114</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <div class="grid">
         <div class="field">
@@ -28,7 +47,7 @@
           <div class="muted">Need a quick sample? <button type="button" id="autoExample" class="linkbtn">Example</button></div>
         </div>
         <div class="field">
-          <label for="jrp">JRP / Port (17–32)</label>
+          <label for="jrp">JRP (17–32)</label>
           <input id="jrp" type="text" placeholder="30-1 (channel defaults to 1 if omitted)">
           <div class="fErr" id="errJrp"></div>
           <div class="muted">Format: JRP-Channel (e.g., 30-1 or just 30 for channel 1)</div>
@@ -37,34 +56,87 @@
 
       <div class="actions">
         <button id="calc">Find Connection</button>
-        <button class="secondary" id="reset">Reset</button>
         <button class="secondary" id="copy">Copy Result</button>
-        <button class="secondary" id="toggleReverse">Reverse Lookup (MMC → T1)</button>
       </div>
 
       <div id="error" class="err" style="display:none;"></div>
 
       <div id="out" class="result" style="display:none;">
-        <div class="row">
-          <div class="kv"><b>Device</b><span id="oDev"></span></div>
-          <div class="kv"><b>Switch (p#)</b><span id="oSwitch"></span></div>
-          <div class="kv"><b>Rack (r#)</b><span id="oRack"></span></div>
-          <div class="kv"><b>JRP / Port</b><span id="oPort"></span></div>
-        </div>
-        <div class="row">
-          <div class="kv"><b>Mini-Rack MMC</b><span id="oMMC"></span></div>
-          <div class="kv"><b>Spare 1</b><span id="oSp1"></span></div>
-          <div class="kv"><b>Spare 2</b><span id="oSp2"></span></div>
-          <div class="kv"><b>Notes</b><span id="oNotes"></span></div>
-        </div>
         <div class="muted" id="more" style="display:none;"></div>
-        <div id="mmcViz" class="diagram" aria-hidden="false" style="display:block;">
-          <div class="legend">
-            <span class="key"><span class="swatch active"></span> Active MMC</span>
-            <span class="key"><span class="swatch mmc"></span> MMCs (1–16)</span>
-            <span class="key"><span class="swatch spare"></span> Spares (17–18)</span>
+        <div id="miniRackMMCSection" style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <button id="toggleMiniRackMMC" class="linkbtn" style="font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 6px; background: rgba(106,141,255,0.1); border: 1px solid rgba(106,141,255,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <span>Mini-Rack MMC Diagram</span>
+              <span id="toggleMiniRackIcon" style="font-size: 12px;">▼</span>
+            </button>
           </div>
-          <div id="mmcDiagram" class="slots"></div>
+          <div id="miniRackMMCContent" style="display: block;">
+            <!-- Step-by-step instructions -->
+            <div class="stepCard">
+              <div class="stepBadge">2</div>
+              <div>
+                <div class="stepTitle">Mini-Rack MMC Connections</div>
+                <div class="stepText">
+                  <div style="margin-bottom: 10px;">
+                    On the T1 side, T1 to Mini-Rack is a <strong>2 MPO to 1 MMC cable</strong> that links the switch to the Mini-Rack. Use the <strong>"P" number</strong> to determine which switch you are working with.
+                  </div>
+                  <div style="margin-bottom: 10px;">
+                    So <strong>two JRPs from the switch will combine to one MMC</strong>. The yellow highlighted slot shows your current MMC. <strong>Click on any MMC slot (1–144)</strong> to see which T1 device and JRP it connects to. Use the navigation buttons to view different MMC blocks. Use the mini‑diagram to jump between MMCs.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="miniInfoStack">
+              <div class="infoRow topRow">
+                <div class="infoCard deviceCard">
+                  <div class="infoLabel">Device</div>
+                  <div class="infoValue" id="oDev"></div>
+                </div>
+                <div class="infoCard jrpCard">
+                  <div class="infoLabel">JRP</div>
+                  <div class="infoValue" id="oPort"></div>
+                  <div class="jrpHint" id="jrpHint"></div>
+                </div>
+              </div>
+              <div class="infoRow bottomRow">
+                <div class="infoCard">
+                  <div class="infoLabel">Mini-Rack MMC</div>
+                  <div class="infoValue highlight" id="oMMC"></div>
+                </div>
+                <div class="infoCard">
+                  <div class="infoLabel">Spare 1</div>
+                  <div class="infoValue" id="oSp1"></div>
+                </div>
+                <div class="infoCard">
+                  <div class="infoLabel">Spare 2</div>
+                  <div class="infoValue" id="oSp2"></div>
+                </div>
+              </div>
+            </div>
+            <div id="mmcViz" class="diagram" aria-hidden="false" style="display:block;">
+              <div class="mmcNavBar">
+                <div id="blockNavigation" class="blockNavigation">
+                  <button class="navStepper" id="blockPrev" title="Previous block">◀ Prev</button>
+                  <div class="blockNavBtns">
+                    <label for="blockSelect" class="blockNavLabel">Go to MMC:</label>
+                    <select id="blockSelect" class="blockSelect">
+                      <option value="1">Block 1: MMC 1-18</option>
+                      <option value="2">Block 2: MMC 19-36</option>
+                      <option value="3">Block 3: MMC 37-54</option>
+                      <option value="4">Block 4: MMC 55-72</option>
+                      <option value="5">Block 5: MMC 73-90</option>
+                      <option value="6">Block 6: MMC 91-108</option>
+                      <option value="7">Block 7: MMC 109-126</option>
+                      <option value="8">Block 8: MMC 127-144</option>
+                    </select>
+                  </div>
+                  <button class="navStepper" id="blockNext" title="Next block">Next ▶</button>
+                </div>
+              </div>
+              <div id="mmcDiagram" class="slots"></div>
+              <div id="currentBlockInfo" style="margin-top: 8px; font-size: 12px; color: #6b7280; text-align: center;"></div>
+            </div>
+          </div>
         </div>
       </div>
 

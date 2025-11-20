@@ -1,18 +1,7 @@
-// Theme: apply on load and enable toggle
+// Theme: always use dark themeimage.png
 (function initTheme(){
   try {
-    const saved = localStorage.getItem('theme');
-    const initial = saved ? saved : 'dark'; // Default to dark theme
-    document.documentElement.setAttribute('data-theme', initial);
-    const fab = document.getElementById('theme-switch');
-    if (fab) {
-      fab.addEventListener('click', () => {
-        const cur = document.documentElement.getAttribute('data-theme') || 'light';
-        const next = cur === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-      });
-    }
+    document.documentElement.setAttribute('data-theme', 'dark');
   } catch {}
 })();
     function parseFields(dev) {
@@ -71,7 +60,7 @@
       const devErr = dev && !dev.toLowerCase().includes('-t1-') ? 'Device must include -t1-.' : (!dev ? '' : '');
       const pErr = validate(P, 1, 16, 'Switch number (p#)');
       const rErr = validate(R, 1, 128, 'Rack number (r#)');
-      const jErr = jrpParseError || validate(j, 17, 32, 'JRP / Port');
+      const jErr = jrpParseError || validate(j, 17, 32, 'JRP');
       const cErr = validate(channel, 1, 4, 'Channel');
     
       setFieldError('errDev', dev ? (devErr || '') : '');
@@ -113,7 +102,7 @@
       if (jrpParseError) errs.push(jrpParseError);
       errs.push(validate(P, 1, 16, "Switch number (p#)"));
       errs.push(validate(R, 1, 128, "Rack number (r#)"));
-      errs.push(validate(j, 17, 32, "JRP / Port"));
+      errs.push(validate(j, 17, 32, "JRP"));
       errs.push(validate(channel, 1, 4, "Channel"));
       errs = errs.filter(Boolean);
     
@@ -429,7 +418,11 @@
               NDF_RU = 20; // R99, R100=RU20
             }
           } else if (NDF_GROUP === 26) {
-            NDF_RU = 18; // R102=RU18
+            if (R === 101) {
+              NDF_RU = 39; // R101=RU39
+            } else if (R === 102) {
+              NDF_RU = 18; // R102=RU18
+            }
           } else if (NDF_GROUP === 27) {
             if (R === 107) {
               NDF_RU = 20; // R107=RU20
@@ -585,22 +578,44 @@
         if (summaryWrapper) summaryWrapper.style.display = 'none';
       }
     
-      document.getElementById('oDev').textContent = dev;
-      document.getElementById('oSwitch').textContent = "P" + P;
-      document.getElementById('oRack').textContent = "R" + R;
-      document.getElementById('oPort').textContent = "JRP " + j;
-      document.getElementById('oMMC').textContent = MMC;
-      document.getElementById('oSp1').textContent = Spare1;
-      document.getElementById('oSp2').textContent = Spare2;
+      const oDevEl = document.getElementById('oDev');
+      if (oDevEl) oDevEl.textContent = dev;
+      const oSwitchEl = document.getElementById('oSwitch');
+      if (oSwitchEl) oSwitchEl.textContent = "P" + P;
+      const oRackEl = document.getElementById('oRack');
+      if (oRackEl) oRackEl.textContent = "R" + R;
+      const oPortEl = document.getElementById('oPort');
+      if (oPortEl) oPortEl.textContent = "JRP " + j;
+    const jrpHintEl = document.getElementById('jrpHint');
+    if (jrpHintEl) {
+      if (!Number.isFinite(j)) {
+        jrpHintEl.textContent = '';
+      } else {
+        const baseJrp = j % 2 === 0 ? j - 1 : j;
+        const partnerJrp = baseJrp + 1;
+        const firstLine = `JRP ${baseJrp} → MMC ${MMC} [1-4]`;
+        const secondLine = `JRP ${partnerJrp} → MMC ${MMC} [5-8]`;
+        jrpHintEl.innerHTML = `<div>${firstLine}</div><div>${secondLine}</div>`;
+      }
+    }
+      const oMMCEl = document.getElementById('oMMC');
+      if (oMMCEl) oMMCEl.textContent = MMC;
+      const oSp1El = document.getElementById('oSp1');
+      if (oSp1El) oSp1El.textContent = Spare1;
+      const oSp2El = document.getElementById('oSp2');
+      if (oSp2El) oSp2El.textContent = Spare2;
       // Clear previous highlights then emphasize MMC and Spares
       document.querySelectorAll('.kv').forEach(el => el.classList.remove('highlight-primary','highlight-secondary'));
-      document.getElementById('oMMC').parentElement.classList.add('highlight-primary');
-      document.getElementById('oSp1').parentElement.classList.add('highlight-secondary');
-      document.getElementById('oSp2').parentElement.classList.add('highlight-secondary');
-      document.getElementById('oNotes').textContent =
-        (P % 2 === 0)
-          ? "Even switch in pair (offset 8)."
-          : "Odd switch in pair (offset 0).";
+      if (oMMCEl && oMMCEl.parentElement) oMMCEl.parentElement.classList.add('highlight-primary');
+      if (oSp1El && oSp1El.parentElement) oSp1El.parentElement.classList.add('highlight-secondary');
+      if (oSp2El && oSp2El.parentElement) oSp2El.parentElement.classList.add('highlight-secondary');
+      const oNotesEl = document.getElementById('oNotes');
+      if (oNotesEl) {
+        oNotesEl.textContent =
+          (P % 2 === 0)
+            ? "Even switch in pair (offset 8)."
+            : "Odd switch in pair (offset 0).";
+      }
       const logicComputed = document.getElementById('logicComputed');
       if (logicComputed) {
         logicComputed.textContent = `Computed with: k=${k}, block_start=${block_start}, offset=${offset}, i=${i}.`;
@@ -863,7 +878,17 @@
     
       // Render MMC mini-diagram
       window._currentBlockStart = block_start;
-      renderMMCDiagram({ MMC, Spare1, Spare2, blockStart: block_start });
+      // Store context for block navigation
+      window._currentMMCContext = { MMC, Spare1, Spare2, blockStart: block_start };
+      // Always update to the block containing the calculated MMC
+      const targetBlock = Math.ceil(MMC / 18);
+      window._currentViewBlock = targetBlock;
+      // Update dropdown immediately to ensure it shows the correct block
+      const blockSelect = document.getElementById('blockSelect');
+      if (blockSelect) {
+        blockSelect.value = String(targetBlock);
+      }
+      renderMMCDiagram(window._currentMMCContext);
     
       // Show T2 checkmark briefly
       const tick = document.getElementById('t2Tick');
@@ -1779,7 +1804,11 @@
             NDF_RU = 20; // R99, R100=RU20
           }
         } else if (NDF_GROUP === 26) {
-          NDF_RU = 18; // R102=RU18
+          if (R === 101) {
+            NDF_RU = 39; // R101=RU39
+          } else if (R === 102) {
+            NDF_RU = 18; // R102=RU18
+          }
         } else if (NDF_GROUP === 27) {
           if (R === 107) {
             NDF_RU = 20; // R107=RU20
@@ -2299,13 +2328,22 @@
       });
     }
     
+    // Track current block being viewed (1-8)
+    window._currentViewBlock = null;
+    
     function renderMMCDiagram(ctx) {
       const { MMC, Spare1, Spare2, blockStart } = ctx;
       const wrap = document.getElementById('mmcDiagram');
       if (!wrap) return;
+      
+      // Determine which block we're viewing - use _currentViewBlock if set, otherwise use block containing MMC
+      const viewBlock = window._currentViewBlock || Math.ceil(MMC / 18);
+      const viewBlockStart = (viewBlock - 1) * 18 + 1;
+      
       wrap.innerHTML = '';
       for (let pos = 1; pos <= 18; pos++) {
-        const num = blockStart + pos - 1;
+        const num = viewBlockStart + pos - 1;
+        if (num > 144) break; // Don't render beyond 144
         const div = document.createElement('div');
         div.className = 'slot';
         div.dataset.num = String(num);
@@ -2313,8 +2351,30 @@
         if (num === MMC) div.classList.add('active');
         if (num === Spare1 || num === Spare2) div.classList.add('spare');
         div.textContent = String(num);
+        // Add hover tooltip showing full MMC number
+        div.title = `MMC ${num}${num === MMC ? ' (Current)' : ''}${num === Spare1 || num === Spare2 ? ' (Spare)' : ''}`;
         wrap.appendChild(div);
       }
+      
+      // Update block info display (hidden per user request)
+      const blockInfo = document.getElementById('currentBlockInfo');
+      if (blockInfo) {
+        blockInfo.textContent = '';
+      }
+      
+      // Update active block in dropdown
+      const blockSelect = document.getElementById('blockSelect');
+      if (blockSelect) {
+        blockSelect.value = String(viewBlock);
+      }
+      
+      // Store current view block
+      window._currentViewBlock = viewBlock;
+      
+      const prevBtn = document.getElementById('blockPrev');
+      const nextBtn = document.getElementById('blockNext');
+      if (prevBtn) prevBtn.disabled = viewBlock <= 1;
+      if (nextBtn) nextBtn.disabled = viewBlock >= Math.ceil(144 / 18);
     }
     
     function hideReversePanel() {
@@ -2326,66 +2386,6 @@
       console.log('🖱️ Calculate button clicked!');
       hideReversePanel();
       compute();
-    });
-    document.getElementById('reset').addEventListener('click', () => {
-      hideReversePanel();
-      document.getElementById('dev').value = '';
-      document.getElementById('jrp').value = '';
-      document.getElementById('out').style.display = 'none';
-      document.getElementById('error').style.display = 'none';
-      document.getElementById('outT2').style.display = 'none';
-      const ndfOut = document.getElementById('outNDF');
-      if (ndfOut) ndfOut.style.display = 'none';
-      const summaryWrapper = document.getElementById('ndfChannelSummary');
-      if (summaryWrapper) summaryWrapper.style.display = 'none';
-      const flowContainer = document.getElementById('flowDiagramContainer');
-      if (flowContainer) {
-        flowContainer.style.display = 'none';
-        // Reset flow diagram animations
-        ['t1Arrow1', 't1Arrow2', 't1Arrow3', 't1Arrow4', 'miniToNdfPath', 'ndfToT2Path1', 'ndfToT2Path2', 'ndfToT2Path3', 'ndfToT2Path4', 'ndfToT2Path5', 'ndfToT2Path6', 'ndfToT2Path7', 'ndfToT2Path8'].forEach(id => {
-          const path = document.getElementById(id);
-          if (path) {
-            path.classList.remove('active', 'cable1', 'cable2', 'cable3', 'cable4');
-            path.classList.add('inactive');
-          }
-        });
-        // Remove dynamically created merge arrow
-        const mergeArrow = document.getElementById('t1MergeArrow');
-        if (mergeArrow) mergeArrow.remove();
-        ['miniRackRect', 'ndfRect'].forEach(id => {
-          const rack = document.getElementById(id);
-          if (rack) rack.classList.remove('highlight');
-        });
-        // Reset T1 rack labels
-        ['t1R1Label', 't1R2Label', 't1R3Label', 't1R4Label'].forEach(id => {
-          const label = document.getElementById(id);
-          if (label) label.textContent = 'P-R · JRP';
-        });
-        // Reset T1 JRP labels
-        ['t1R1Jrp', 't1R2Jrp', 't1R3Jrp', 't1R4Jrp'].forEach(id => {
-          const label = document.getElementById(id);
-          if (label) label.textContent = '';
-        });
-        // Reset T2 channel labels (8 channels now)
-        ['t2Ch1Label', 't2Ch2Label', 't2Ch3Label', 't2Ch4Label', 't2Ch5Label', 't2Ch6Label', 't2Ch7Label', 't2Ch8Label'].forEach(id => {
-          const label = document.getElementById(id);
-          if (label) label.textContent = 'P-R · JRP-CH';
-        });
-        // Reset T2 channel highlights and show all
-        ['t2Channel1', 't2Channel2', 't2Channel3', 't2Channel4', 't2Channel5', 't2Channel6', 't2Channel7', 't2Channel8'].forEach(id => {
-          const channel = document.getElementById(id);
-          if (channel) {
-            channel.style.display = 'block';
-            const rect = channel.querySelector('rect');
-            if (rect) {
-              rect.classList.remove('highlight', 'cable1', 'cable2', 'cable3', 'cable4');
-            }
-          }
-        });
-      }
-      setFieldError('errDev','');
-      setFieldError('errJrp','');
-      liveValidate();
     });
     document.getElementById('copy').addEventListener('click', async () => {
       hideReversePanel();
@@ -2403,10 +2403,6 @@
       catch (e) { alert('Copy failed. ' + e); }
     });
     
-    document.getElementById('toggleReverse').addEventListener('click', () => {
-      const panel = document.getElementById('reversePanel');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    });
     
     // Auto example: prefill inputs without computing
     document.getElementById('autoExample').addEventListener('click', () => {
@@ -2523,6 +2519,10 @@
         const base = 17 + 2 * i; // pair base
         const newJ = !Number.isNaN(currentJ) ? (currentJ % 2 === 0 ? base + 1 : base) : base;
     
+        // Calculate spares for the new block (based on k)
+        const Spare1 = 18 * k + 17;
+        const Spare2 = 18 * k + 18;
+    
         // Update dev's -p#- while keeping rest
         const devInput = document.getElementById('dev');
         let dev = devInput.value.trim();
@@ -2531,9 +2531,94 @@
         }
         devInput.value = dev;
         document.getElementById('jrp').value = String(newJ);
+        
+        // Update spares immediately before compute() runs
+        const oSp1El = document.getElementById('oSp1');
+        const oSp2El = document.getElementById('oSp2');
+        if (oSp1El) oSp1El.textContent = Spare1;
+        if (oSp2El) oSp2El.textContent = Spare2;
+        
         hideReversePanel();
         compute();
       });
+    })();
+    
+    // Expandable button for Mini-Rack MMC section
+    (function attachToggleMiniRackMMC(){
+      const toggleBtn = document.getElementById('toggleMiniRackMMC');
+      const toggleIcon = document.getElementById('toggleMiniRackIcon');
+      const miniRackContent = document.getElementById('miniRackMMCContent');
+      
+      if (!toggleBtn || !miniRackContent) return;
+      
+      // Load saved preference
+      const savedState = localStorage.getItem('miniRackMMCExpanded');
+      const isExpanded = savedState !== 'false'; // Default to expanded
+      
+      function toggleSection() {
+        const currentlyVisible = miniRackContent.style.display !== 'none';
+        if (currentlyVisible) {
+          miniRackContent.style.display = 'none';
+          if (toggleIcon) toggleIcon.textContent = '▶';
+          localStorage.setItem('miniRackMMCExpanded', 'false');
+        } else {
+          miniRackContent.style.display = 'block';
+          if (toggleIcon) toggleIcon.textContent = '▼';
+          localStorage.setItem('miniRackMMCExpanded', 'true');
+        }
+      }
+      
+      // Set initial state
+      if (!isExpanded) {
+        miniRackContent.style.display = 'none';
+        if (toggleIcon) toggleIcon.textContent = '▶';
+      } else {
+        miniRackContent.style.display = 'block';
+        if (toggleIcon) toggleIcon.textContent = '▼';
+      }
+      
+      toggleBtn.addEventListener('click', toggleSection);
+    })();
+    
+    // Block navigation for Mini-Rack MMC (navigate between 8 blocks of 18 MMCs each)
+    (function attachBlockNavigation(){
+      const blockSelect = document.getElementById('blockSelect');
+      const prevBtn = document.getElementById('blockPrev');
+      const nextBtn = document.getElementById('blockNext');
+      if (!blockSelect && !prevBtn && !nextBtn) return;
+      
+      function changeBlock(delta) {
+        if (!window._currentMMCContext) return;
+        const currentBlock = window._currentViewBlock || 1;
+        const target = Math.min(8, Math.max(1, currentBlock + delta));
+        if (target === currentBlock) return;
+        window._currentViewBlock = target;
+        if (blockSelect) blockSelect.value = String(target);
+        renderMMCDiagram(window._currentMMCContext);
+      }
+      
+      // Dropdown change handler
+      if (blockSelect) {
+        blockSelect.addEventListener('change', () => {
+          const blockNum = Number(blockSelect.value);
+          if (Number.isNaN(blockNum) || blockNum < 1 || blockNum > 8) return;
+          
+          // Update current view block
+          window._currentViewBlock = blockNum;
+          
+          // Re-render diagram with current MMC context
+          if (window._currentMMCContext) {
+            renderMMCDiagram(window._currentMMCContext);
+          }
+        });
+      }
+      
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => changeBlock(-1));
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => changeBlock(1));
+      }
     })();
     
     // Copy T2 details
