@@ -658,11 +658,9 @@
       const ndfTitle = document.getElementById('ndfTitle');
       const ndfRU = document.getElementById('ndfRU');
       const ndfMMC = document.getElementById('ndfMMC');
-      const ndfCable = document.getElementById('ndfCable');
-      const ndfRange = document.getElementById('ndfRange');
       const ndfNote = document.getElementById('ndfNote');
       
-      if (ndfOut && ndfRU && ndfMMC && ndfCable && ndfRange && ndfNote) {
+      if (ndfOut && ndfRU && ndfMMC && ndfNote) {
         showWithTransition(ndfOut);
         ndfOut.classList.remove('show');
         void ndfOut.offsetWidth;
@@ -675,10 +673,8 @@
           if (CH_T2 >= 1 && CH_T2 <= 4) {
             ndfMMC.classList.add(`cable${CH_T2}`);
           }
-          ndfCable.textContent = ndf.Cable;
-          ndfRange.textContent = `${ndf.Range[0]}–${ndf.Range[1]}`;
           // Display uses T2 JRP and Channel
-          ndfNote.textContent = `Derived from JRP ${j} (cable ${ndf.Cable}) in JRP_T2 ${JRP_T2}-${CH_T2}.`;
+          ndfNote.textContent = `Derived from JRP ${j} in JRP_T2 ${JRP_T2}-${CH_T2}.`;
           ndfOut.classList.add('show');
           
           // Update and show data flow diagram
@@ -855,8 +851,6 @@
           ndfRU.textContent = (R < 1 || R > 51) ? '—' : displayedRU; 
           ndfMMC.textContent = '—';
           ndfMMC.className = 'ndfVal'; // Clear cable color classes
-          ndfCable.textContent = '—';
-          ndfRange.textContent = '—';
           const isSupported = allowNDF;
           ndfNote.textContent = !isSupported
             ? `NDF mapping is supported for Racks 1–42, 51, 61–85, 86–98, 99–100, 101–102, 106–107, 111–112, and 114 of T1. R${R} mapping is not defined.`
@@ -2016,8 +2010,6 @@
     function updateNDFDisplay(ndfData, R_clicked, CH_T2_clicked, j) {
       const ndfRU = document.getElementById('ndfRU');
       const ndfMMC = document.getElementById('ndfMMC');
-      const ndfCable = document.getElementById('ndfCable');
-      const ndfRange = document.getElementById('ndfRange');
       const ndfNote = document.getElementById('ndfNote');
       const ndfLabel = document.getElementById('ndfLabel');
       const mmcLabel = document.getElementById('mmcLabel');
@@ -2051,25 +2043,9 @@
         }
       }
       
-      if (ndfCable) {
-        if (isDefined) {
-          ndfCable.textContent = ndfData.Cable || '—';
-        } else {
-          ndfCable.textContent = '—';
-        }
-      }
-      
-      if (ndfRange) {
-        if (isDefined && ndfData.Range && ndfData.Range[0]) {
-          ndfRange.textContent = `${ndfData.Range[0]}–${ndfData.Range[1]}`;
-        } else {
-          ndfRange.textContent = '—';
-        }
-      }
-      
       if (ndfNote) {
         if (isDefined) {
-          ndfNote.textContent = `Derived from JRP ${j} (cable ${ndfData.Cable || '—'}) in JRP_T2 ${Math.floor((R_clicked - 1) / 4) + 1}-${CH_T2_clicked}.`;
+          ndfNote.textContent = `Derived from JRP ${j} in JRP_T2 ${Math.floor((R_clicked - 1) / 4) + 1}-${CH_T2_clicked}.`;
         } else {
           ndfNote.textContent = `NDF mapping for key ${key} (R${R_clicked}, CH${CH_T2_clicked}) is not defined yet.`;
         }
@@ -2650,9 +2626,7 @@
       const title = document.getElementById('ndfTitle').textContent;
       const ru = document.getElementById('ndfRU').textContent;
       const mmc = document.getElementById('ndfMMC').textContent;
-      const cable = document.getElementById('ndfCable').textContent;
-      const range = document.getElementById('ndfRange').textContent;
-      const txt = `${title}: RU ${ru}, MMC ${mmc}, Cable ${cable}, Range ${range}`;
+      const txt = `${title}: RU ${ru}, MMC ${mmc}`;
       try { 
         await navigator.clipboard.writeText(txt);
         copyBtn.classList.add('copy-success');
